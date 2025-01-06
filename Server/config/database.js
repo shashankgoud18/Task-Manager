@@ -5,12 +5,10 @@ const connectToDb = async () => {
     try {
         // Connect to MongoDB using the connection string from environment variables
         const conn = await mongoose.connect(process.env.MONGO_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
         });
 
         // Log successful connection
-        console.log(`MongoDB connected: ${conn.connection.host}`);
+        console.log(`MongoDB connected: ${process.env.MONGO_URI}`);
     } catch (error) {
         // Log the error and exit the process with failure
         console.error(`Error: ${error.message}`);

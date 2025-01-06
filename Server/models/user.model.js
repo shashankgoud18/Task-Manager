@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 const { type } = require('os');
+const jwt = require('jsonwebtoken');
 
 const UserSchema = new mongoose.Schema({
     name:{
-        typw: String,
+        type: String,
         required: true
     },
     email:{
@@ -35,5 +36,13 @@ const UserSchema = new mongoose.Schema({
     otp:Number,
     otp_expiry:Date
 })
+
+UserSchema.methods.getJwtToken = function(){
+    return jwt.sign({id:this._id},process.env.JWT_SECRET,{
+        expiresIn:process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60
+    })
+}
+
+
 
 module.exports = mongoose.model('User', UserSchema);
