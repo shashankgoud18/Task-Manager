@@ -30,11 +30,13 @@ const UserSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    task:{
-        type:String,
-        description: String,
-        completed:Boolean
-    },
+    tasks:[
+        {
+            title:String,
+            description: String,
+            completed:Boolean
+        },
+    ],
     otp:Number,
     otp_expiry:Date
 })

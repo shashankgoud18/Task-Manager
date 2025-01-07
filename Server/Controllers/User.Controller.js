@@ -88,4 +88,70 @@ const login = async (req, res) => {
     }
 }
 
-module.exports = { register, verify,login };
+const logout = async (req, res) => {
+    try {
+        res.cookie('token', null, {
+            expires: new Date(Date.now()),
+            httpOnly: true
+        });
+
+        res.status(200).json({ success: true, message: 'Logged out successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
+const addTask = async (req, res) => {
+     const { task, description } = req.body;
+
+    try {
+        const user = await User.findById(req.user._id);
+        user.tasks.push({
+             task,
+            description,
+            completed: false,
+            createdAt: Date.now()
+        });
+        await user.save();
+        res.status(200).json({ success: true, message: 'Task added successfully' });
+    }catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
+const removeTask = async (req, res) => {
+    try {
+        const {taskId} = req.params;
+        const user = await User.findById(req.user._id);
+        user.tasks = user.tasks.filter((task) => task._id.toString() !== taskId.toString());
+        await user.save();
+        res.status(200).json({ success: true, message: 'Task removed successfully' });
+    }catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+const updateTask = async (req, res) => {
+    try{
+       const {taskId} = req.params;
+        const user = await User.findById(req.user._id);
+        const task = user.tasks.find((task) => task._id.toString() === taskId);
+
+        if (!task) {
+            return res.status(404).json({ success: false, message: 'Task not found' });
+        }
+
+        // Toggle the completed status of the task
+        task.completed = !task.completed;
+
+        await user.save();
+        res.status(200).json({ success: true, message: 'Task updated successfully' });
+    }catch (error) {
+        res.status(500).json({ error: error.message });
+
+    }
+}
+
+module.exports = { register, verify,login,logout ,addTask,removeTask,updateTask}; 
