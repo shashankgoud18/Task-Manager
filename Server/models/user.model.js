@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const { type } = require('os');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
 
 const UserSchema = new mongoose.Schema({
     name:{
@@ -37,10 +39,28 @@ const UserSchema = new mongoose.Schema({
     otp_expiry:Date
 })
 
+
+UserSchema.pre('save', async function(next){
+    if(!this.isModified('password')){
+        next()
+    }
+    const salt = await bcrypt.genSalt(10)
+    this.password = await bcrypt.hash(this.password,salt)
+    next()
+})
+
+
 UserSchema.methods.getJwtToken = function(){
     return jwt.sign({id:this._id},process.env.JWT_SECRET,{
         expiresIn:process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60
-    })
+    },
+    console.log("Expires in (seconds):", Number(process.env.JWT_COOKIE_EXPIRES) * 24 * 60 * 60)
+
+)
+}
+
+UserSchema.methods.comparePassword = async function(password){
+    return await bcrypt.compare(password,this.password)
 }
 
 
