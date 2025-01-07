@@ -16,7 +16,7 @@ const register = async (req, res) => {
         // Generate OTP and expiry
         const otp = Math.floor(100000 + Math.random() * 900000);
         const otp_expiry = new Date(Date.now() + Number(process.env.OTP_EXPIRY) * 60 * 1000); // Convert minutes to milliseconds
-         console.log("Expires in (seconds):", Number(process.env.OTP_EXPIRY) * 60 * 1000)
+        console.log("Expires in (seconds):", Number(process.env.OTP_EXPIRY) * 60 * 1000)
 
         // Create new user
         user = await User.create({
@@ -45,7 +45,7 @@ const register = async (req, res) => {
 const verify = async (req, res) => {
     try {
         const otp = Number(req.body.otp);
-         
+
         const user = await User.findById(req.user._id);
 
         if (user.otp !== otp || user.otp_expiry < Date.now()) {
@@ -59,7 +59,7 @@ const verify = async (req, res) => {
         await user.save();
         sendToken(res, user, 200, 'User verified successfully');
 
-    }catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 }
@@ -103,19 +103,19 @@ const logout = async (req, res) => {
 
 
 const addTask = async (req, res) => {
-     const { task, description } = req.body;
+    const { task, description } = req.body;
 
     try {
         const user = await User.findById(req.user._id);
         user.tasks.push({
-             task,
+            task,
             description,
             completed: false,
             createdAt: Date.now()
         });
         await user.save();
         res.status(200).json({ success: true, message: 'Task added successfully' });
-    }catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 }
@@ -123,19 +123,19 @@ const addTask = async (req, res) => {
 
 const removeTask = async (req, res) => {
     try {
-        const {taskId} = req.params;
+        const { taskId } = req.params;
         const user = await User.findById(req.user._id);
         user.tasks = user.tasks.filter((task) => task._id.toString() !== taskId.toString());
         await user.save();
         res.status(200).json({ success: true, message: 'Task removed successfully' });
-    }catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 }
 
 const updateTask = async (req, res) => {
-    try{
-       const {taskId} = req.params;
+    try {
+        const { taskId } = req.params;
         const user = await User.findById(req.user._id);
         const task = user.tasks.find((task) => task._id.toString() === taskId);
 
@@ -148,10 +148,125 @@ const updateTask = async (req, res) => {
 
         await user.save();
         res.status(200).json({ success: true, message: 'Task updated successfully' });
-    }catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
 
     }
 }
 
-module.exports = { register, verify,login,logout ,addTask,removeTask,updateTask}; 
+const getMyProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        res.status(200).json({ success: true, user });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+const updateProfile = async (req, res) => {
+    try {
+        const { name } = req.body;
+        const user = await User.findById(req.user._id);
+        user.name = name;
+        await user.save();
+        res.status(200).json({ success: true, message: 'Profile updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+const updatePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const user = await User.findById(req.user._id).select('+password');
+
+        // Check if current password is correct
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, error: 'Current password is incorrect' });
+        }
+
+        // Update password
+        user.password = newPassword;
+        await user.save();
+        sendToken(res, user, 200, 'Password updated successfully');
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000);
+
+        user.resetPasswordOtp = otp;
+        user.resetPasswordOtpExpiry = new Date(Date.now() + Number(process.env.OTP_EXPIRY) * 60 * 1000);
+
+        await user.save();
+
+        const message = `Your OTP for resetting password is ${otp} if you did not request this please ignore this email.`;
+        // Send OTP to user's email
+        // await sendEmail(user.email, otp, 'Reset Password OTP');
+        await sendMail(email, 'OTP for Resetting Password', message);
+
+
+
+        res.status(200).json({ success: true, message: 'OTP sent to your email' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
+const resetPassword = async (req, res) => {
+    try {
+        const { otp, newPassword } = req.body;
+        console.log('OTP:', otp);
+        console.log('New Password:', newPassword);
+
+        const user = await User.findOne({
+            resetPasswordOtp: otp,
+            resetPasswordOtpExpiry: { $gt: Date.now() }
+        });
+
+        console.log('User:', user);
+
+        if (!user) {
+            return res.status(400).json({ success: false, error: 'Invalid OTP or OTP has expired' });
+        }
+
+        user.password = newPassword;
+        user.resetPasswordOtp = undefined;
+        user.resetPasswordOtpExpiry = undefined;
+        await user.save();
+
+        res.status(200).json({ success: true, message: 'Password reset successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
+
+
+module.exports = {
+    register,
+    verify,
+    login,
+    logout,
+    addTask,
+    removeTask,
+    updateTask,
+    getMyProfile,
+    updateProfile,
+    updatePassword,
+    forgotPassword,
+    resetPassword
+}; 

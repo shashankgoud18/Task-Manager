@@ -1,14 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const {register} = require('../Controllers/User.Controller');
-const {verify} = require('../Controllers/User.Controller');
+const {register,verify,login,logout,addTask,removeTask,updateTask,getMyProfile,updateProfile,updatePassword,forgotPassword,resetPassword} = require('../Controllers/User.Controller');
 const isAuthenticated = require('../middleware/auth');
-const {login} = require('../Controllers/User.Controller');
-const {logout} = require('../Controllers/User.Controller');
-const {addTask} = require('../Controllers/User.Controller');
-const {removeTask} = require('../Controllers/User.Controller');
-const {updateTask} = require('../Controllers/User.Controller');
-
 
 
 router.post('/register',register);
@@ -22,6 +15,16 @@ router.post('/newTask',isAuthenticated,addTask);
 
 router.delete('/removeTask/:taskId',isAuthenticated,removeTask);
 router.get('/updateTask/:taskId',isAuthenticated,updateTask);
+
+router.get('/me',isAuthenticated,getMyProfile);
+
+router.put('/updateProfile',isAuthenticated,updateProfile);
+router.put('/updatePassword',isAuthenticated,updatePassword);
+
+router.post('/forgotPassword',forgotPassword);
+router.put('/resetPassword',resetPassword);
+
+
 
 
 module.exports = router;
