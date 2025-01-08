@@ -2,16 +2,32 @@
 const User = require('../models/user.model');
 const sendMail = require('../utils/sendMail');
 const sendToken = require('../utils/sendToken');
+const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
 
 const register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
+
+        const avatar = req.files.avatar;
+        console.log('Avatar:', avatar);
+
+
+        // Check if user already exists
 
         // Check if user already exists
         let user = await User.findOne({ email }).select('+password');
         if (user) {
             return res.status(400).json({ success: false, error: 'User already exists' });
         }
+
+        // Upload avatar to cloudinary
+        const myCloud = await cloudinary.uploader.upload(avatar.tempFilePath,{
+            folder:"todo-app"
+        }
+    )
+
+       
 
         // Generate OTP and expiry
         const otp = Math.floor(100000 + Math.random() * 900000);
@@ -24,16 +40,12 @@ const register = async (req, res) => {
             email,
             password,
             avatar: {
-                public_id: '',
-                url: ''
+                public_id: myCloud.public_id,
+                url: myCloud.secure_url
             },
             otp,
             otp_expiry
         });
-
-        // Send OTP via email
-        await sendMail(email, 'OTP for Verification', `Your OTP is ${otp}`);
-
         // Send token in response
         sendToken(res, user, 201, 'OTP sent successfully');
     } catch (error) {
@@ -166,10 +178,30 @@ const getMyProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         const { name } = req.body;
+        const avatar = req.files.avatar;
+
         const user = await User.findById(req.user._id);
         user.name = name;
+
+
+        if(avatar){
+            await cloudinary.uploader.destroy(user.avatar.public_id);
+            const myCloud = await cloudinary.uploader.upload(avatar.tempFilePath,{
+                folder:"todo-app"
+            }
+        );
+        fs.rmSync("./tmp",{recursive:true});
+
+
+        user.avatar = {
+            public_id: myCloud.public_id,
+            url: myCloud.secure_url
+        }
+
+
         await user.save();
         res.status(200).json({ success: true, message: 'Profile updated successfully' });
+    }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
