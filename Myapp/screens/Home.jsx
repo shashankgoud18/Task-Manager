@@ -1,121 +1,147 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet,ScrollView} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';;// Ensure the correct icon library is imported
-import Task from '../components/Task'; // Ensure the correct path to Task component
-import { Dialog } from 'react-native-paper';
-import { Button } from 'react-native-paper';
-import { TextInput } from 'react-native-paper';
-import { useState } from 'react';
-
+import React, { useEffect, useState } from "react";
+import {
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Button, Dialog } from "react-native-paper";
+import Icon from "react-native-vector-icons/Entypo";
+import { useDispatch, useSelector } from "react-redux";
+import Task from "../components/Task";
+import { addTask, loadUser } from "../redux/action";
+import { clearError, clearMessage } from "../redux/reducer";
 
 const Home = ({ navigation }) => {
-  const task = [
-    { title: 'Task 1', description: 'Description 1', completed: false, _id: '1' },
-    { title: 'Task 2', description: 'Description 2', completed: true, _id: '2' },
-    { title: 'Task 3', description: 'Description 3', completed: false, _id: '3' },
-    { title: 'Task 4', description: 'Description 4', completed: false, _id: '4' },
-  ];
+  const { user } = useSelector((state) => state.auth);
 
-  const [openDialog, setopenDialog] = useState(false);
-  const [title, settitle] = useState('')
-  const [description, setdescription] = useState('')
+  const dispatch = useDispatch();
+
+  const { loading, message, error } = useSelector((state) => state.message);
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
   const hideDialog = () => {
-    setopenDialog(!openDialog);
-  }
+    setOpenDialog(!openDialog);
+  };
 
-  const addHandler = () => {
-    console.log('Task Added');
-  }
+  const addTaskHandler = async () => {
+    await dispatch(addTask(title, description));
+    dispatch(loadUser());
+  };
 
-
+  useEffect(() => {
+    if (error) {
+      alert(error);
+      dispatch(clearError());
+    }
+    if (message) {
+      alert(message);
+      dispatch(clearMessage());
+    }
+  }, [alert, error, message, dispatch]);
 
   return (
     <>
-    <View  style={styles.container} screenOptions={{headerShown: false}}>
-     <ScrollView>
-     <Text style={styles.header} onPress={() => navigation.navigate('login')}>
-       ALL TASKS
-      </Text>
-      {task.map((item) => (
-        <Task key={item._id} title={item.title} description={item.description} status={item.completed} taskId={item._id} />
-      ))}
-      <TouchableOpacity style={styles.addBtn} onPress={hideDialog}>
-        <Icon name='add-to-list' size={20} color={'#900'} /> {/* Ensure the icon name is valid */}
-      </TouchableOpacity>
-     </ScrollView>
-    </View>
+      <View
+        style={{
+          backgroundColor: "#fff",
+          flex: 1,
+          paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+        }}
+      >
+        <ScrollView>
+          <SafeAreaView>
+            <Text style={styles.heading}>All Tasks</Text>
 
+            {user &&
+              user.tasks.map((item) => (
+                <Task
+                  key={item._id}
+                  title={item.title}
+                  description={item.description}
+                  status={item.completed}
+                  taskId={item._id}
+                />
+              ))}
 
-    <Dialog visible={openDialog} onDismiss={hideDialog}>
+            <TouchableOpacity style={styles.addBtn} onPress={hideDialog}>
+              <Icon name="add-to-list" size={20} color="#900" />
+            </TouchableOpacity>
+          </SafeAreaView>
+        </ScrollView>
+      </View>
+      <Dialog visible={openDialog} onDismiss={hideDialog}>
+        <Dialog.Title>ADD A TASK</Dialog.Title>
+        <Dialog.Content>
+          <TextInput
+            style={styles.input}
+            placeholder="Title"
+            value={title}
+            onChangeText={setTitle}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Description"
+            value={description}
+            onChangeText={setDescription}
+          />
 
-      <Dialog.Title>
-        Add Task
-        </Dialog.Title>
-      <Dialog.Content>
-        <TextInput 
-        style={styles.input} 
-        label="Title"
-        value={title}
-        onChangeText={settitle} />
-        
-        <TextInput 
-        style={styles.input}
-         label="Description" 
-         value={description}
-         onChangeText={setdescription}/>
-
-        <View style={{flexDirection:'row', alignItems:'center'}}>
-          <TouchableOpacity onPress={hideDialog}>
-            <Text>Cancel</Text>
-          </TouchableOpacity>
-          <Button
-           onPress={addHandler}
-          //  disabled={!title || !description || loading}
-           >
-            Add
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity onPress={hideDialog}>
+              <Text>CANCEL</Text>
+            </TouchableOpacity>
+            <Button
+              onPress={addTaskHandler}
+              color="#900"
+              disabled={!title || !description || loading}
+            >
+              ADD
             </Button>
-        </View>
-
-       
-      </Dialog.Content>
-    </Dialog>
-
+          </View>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 };
 
+export default Home;
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    margin: 20,
-    textAlign: 'center',
-    backgroundColor: '#fafafa',
-    padding: 10,
+  heading: {
+    fontSize: 28,
+    textAlign: "center",
+    marginTop: 25,
+    marginBottom: 20,
+    color: "#fff",
+    backgroundColor: "#474747",
   },
   addBtn: {
-    width:150,
+    backgroundColor: "#fff",
+    width: 150,
     height: 50,
-    justifyContent: 'center',
-    alignSelf:'center',
-    marginTop: 24,
-    padding: 8,
-    backgroundColor: '#fafafa',
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 100,
-    alignItems: 'center',
-    elevation:6
+    alignSelf: "center",
+    marginVertical: 20,
+    elevation: 5,
   },
   input: {
-   padding:2,
-   margin:10,
-   borderColor:'#fafafa',
-   borderWidth:1
-  }
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#b5b5b5",
+    padding: 10,
+    paddingLeft: 15,
+    borderRadius: 5,
+    marginVertical: 15,
+    fontSize: 15,
+  },
 });
-
-export default Home;
