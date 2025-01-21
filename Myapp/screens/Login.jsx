@@ -10,6 +10,7 @@ import { Button } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../redux/action";
 import { clearError } from "../redux/reducer";
+import {isAuthenticated} from "../redux/reducer"
 
 const Login = ({ navigation }) => {
   const { error } = useSelector((state) => state.auth);
@@ -21,14 +22,16 @@ const Login = ({ navigation }) => {
 
   const loginHandler = () => {
     dispatch(login(email, password));
+    console.log("login")
   };
 
   useEffect(() => {
+    console.log(isAuthenticated);
     if (error) {
       alert(error);
       dispatch(clearError());
     }
-  }, [error, dispatch, alert]);
+  }, [error, dispatch, alert,isAuthenticated]);
 
   return (
     <View
@@ -43,7 +46,7 @@ const Login = ({ navigation }) => {
       <View style={{ width: "70%" }}>
         <TextInput
           style={Styles.input}
-          placeholder="Email"
+          placeholder="email"
           value={email}
           onChangeText={setEmail}
         />
@@ -51,7 +54,7 @@ const Login = ({ navigation }) => {
         <TextInput
           secureTextEntry
           style={Styles.input}
-          placeholder="Password"
+          placeholder="password"
           value={password}
           onChangeText={setPassword}
         />

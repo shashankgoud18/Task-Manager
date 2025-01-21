@@ -22,6 +22,7 @@ const Main = () => {
 
   const { isAuthenticated, loading } = useSelector((state) => state.auth);
   return  (
+    // loading ? <Loader /> :
     <NavigationContainer>
       <Stack.Navigator initialRouteName={isAuthenticated ? "home" : "login"}>
         <Stack.Screen
