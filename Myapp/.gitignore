@@ -72,3 +72,11 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+package.json
+package-lock.json
+metro.config.js
+
+android/
+android/app/
+ios/

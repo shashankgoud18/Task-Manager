@@ -32,11 +32,13 @@ const Home = ({ navigation }) => {
     setOpenDialog(!openDialog);
   };
 
-  const addTaskHandler = async () => {
-    await dispatch(addTask(title, description));
+  const addTaskHandler = () => {
+    console.log("Add button pressed");
+    console.log("Title:", title);
+    console.log("Description:", description);
+    dispatch(addTask(title, description));
     dispatch(loadUser());
   };
-
   useEffect(() => {
     if (error) {
       alert(error);
@@ -46,7 +48,7 @@ const Home = ({ navigation }) => {
       alert(message);
       dispatch(clearMessage());
     }
-  }, [alert, error, message, dispatch]);
+  }, [ error, message, dispatch]);
 
   return (
     <>
@@ -61,16 +63,15 @@ const Home = ({ navigation }) => {
           <SafeAreaView>
             <Text style={styles.heading}>All Tasks</Text>
 
-            {user &&
-              user.tasks.map((item) => (
-                <Task
-                  key={item._id}
-                  title={item.title}
-                  description={item.description}
-                  status={item.completed}
-                  taskId={item._id}
-                />
-              ))}
+            {user && user.tasks && user.tasks.map((item) => (
+            <Task
+              key={item._id}
+              title={item.title}
+              description={item.description}
+              status={item.completed}
+              taskId={item._id}
+            />
+          ))}
 
             <TouchableOpacity style={styles.addBtn} onPress={hideDialog}>
               <Icon name="add-to-list" size={20} color="#900" />

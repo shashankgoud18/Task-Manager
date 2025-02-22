@@ -16,18 +16,18 @@ const Profile = ({ navigation, route }) => {
   const { user, loading } = useSelector((state) => state.auth);
 
   const [name, setName] = useState(user?.name);
-  const [avatar, setAvatar] = useState(user?.avatar.url);
+ // const [avatar, setAvatar] = useState(user?.avatar.url);
 
   const dispatch = useDispatch();
 
   const submitHandler = async () => {
     const myForm = new FormData();
     myForm.append("name", name);
-    myForm.append("avatar", {
-      uri: avatar,
-      type: mime.getType(avatar),
-      name: avatar.split("/").pop(),
-    });
+    // myForm.append("avatar", {
+    //   uri: avatar,
+    //   type: mime.getType(avatar),
+    //   name: avatar.split("/").pop(),
+    // });
     await dispatch(updateProfile(myForm));
     dispatch(loadUser());
   };
@@ -63,7 +63,7 @@ const Profile = ({ navigation, route }) => {
     >
       <Avatar.Image
         size={100}
-        source={{ uri: avatar ? avatar : null }}
+       // source={{ uri: avatar ? avatar : null }}
         style={{ backgroundColor: "#900" }}
       />
       <TouchableOpacity onPress={handleImage}>

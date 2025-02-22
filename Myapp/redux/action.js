@@ -38,7 +38,11 @@ import {
   verificationSuccess,
 } from "./reducer";
 
-const serverUrl = "https://todo.fr.to/api/v1";
+// const serverUrl = "http://192.168.1.100:4000/api/v1";
+
+const serverUrl = "https://5df7-106-210-99-4.ngrok-free.app/api/v1";
+
+//const serverUrl = "http://10.0.2.2:4000/api/v1";
 
 export const login = (email, password) => async (dispatch) => {
   try {
@@ -51,10 +55,22 @@ export const login = (email, password) => async (dispatch) => {
         headers: {
           "Content-Type": "application/json",
         },
+        withCredentials: true, // Add this if you're using cookies for auth
       }
     );
 
-    dispatch(loginSuccess(data));
+    console.log("Login response:", data); // ✅ Log API response
+
+
+   // dispatch({ type: 'loginSuccess', payload: data.user });
+    //dispatch(loginSuccess(data));
+
+   dispatch(loginSuccess({
+    user: data.data.user, 
+    message: data.message 
+   }))
+
+   // dispatch(loadUser()); 
   } catch (error) {
     dispatch(loginFailure(error.response.data.message));
   }
@@ -64,7 +80,9 @@ export const loadUser = () => async (dispatch) => {
   try {
     dispatch(loadUserRequest());
 
-    const { data } = await axios.get(`${serverUrl}/me`);
+    const { data } = await axios.get(`${serverUrl}/me`,{
+      withCredentials: true, // Add this if you're using cookies for auth
+    });
 
     dispatch(loadUserSuccess(data));
   } catch (error) {
@@ -76,8 +94,11 @@ export const addTask = (title, description) => async (dispatch) => {
   try {
     dispatch(addTaskRequest());
 
+    console.log("Sending request to:", `${serverUrl}/newTask`);
+    console.log("Payload:", { title, description });
+
     const { data } = await axios.post(
-      `${serverUrl}/newtask`,
+      `${serverUrl}/newTask`,
       {
         title,
         description,
@@ -86,14 +107,43 @@ export const addTask = (title, description) => async (dispatch) => {
         headers: {
           "Content-Type": "application/json",
         },
+        withCredentials: true, // Add this if you're using cookies for auth
       }
     );
 
+    console.log("Response:", data);
     dispatch(addTaskSuccess(data.message));
-  } catch (error) {
-    dispatch(addTaskFailure(error.response.data.message));
+  } // In action.js, update the catch block:
+  catch (error) {
+    console.error("Add task error:", error);
+    let errorMessage = "Network Error";
+    if (error.response) {
+      errorMessage = error.response.data.message || "Server Error";
+    } else if (error.request) {
+      errorMessage = "No response from server";
+    }
+    dispatch(addTaskFailure(errorMessage));
   }
 };
+
+
+// export const addTask = (title, description) => async (dispatch) => {
+//   try {
+//     dispatch(addTaskRequest());
+//     await axios.post(...); // Send task to backend
+//     dispatch(loadUser()); // Refresh user data (including tasks)
+//   } catch (error) { 
+//     console.error("Add task error:", error);
+//     let errorMessage = "Network Error";
+//     if (error.response) {
+//       errorMessage = error.response.data.message || "Server Error";
+//     } else if (error.request) {
+//       errorMessage = "No response from server";
+//     }
+//     dispatch(addTaskFailure(errorMessage));
+// //   }
+//    }
+// };
 
 export const updateTask = (taskId) => async (dispatch) => {
   try {
@@ -101,9 +151,13 @@ export const updateTask = (taskId) => async (dispatch) => {
 
     dispatch(updateTaskRequest());
 
-    const { data } = await axios.get(`${serverUrl}/task/${taskId}`);
+    const { data } = await axios.get(`${serverUrl}/updateTask/${taskId}`,
+      { completed }, // Send completion status
+      { withCredentials: true }
+    );
 
     dispatch(updateTaskSuccess(data.message));
+    dispatch(loadUser()); 
   } catch (error) {
     dispatch(updateTaskFailure(error.response.data.message));
   }
@@ -113,8 +167,9 @@ export const deleteTask = (taskId) => async (dispatch) => {
   try {
     dispatch(deleteTaskRequest());
 
-    const { data } = await axios.delete(`${serverUrl}/task/${taskId}`);
+    const { data } = await axios.delete(`${serverUrl}/removeTask/${taskId}`,{ withCredentials: true });
     dispatch(deleteTaskSuccess(data.message));
+    dispatch(loadUser());
   } catch (error) {
     dispatch(deleteTaskFailure(error.response.data.message));
   }

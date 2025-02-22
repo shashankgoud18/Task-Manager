@@ -4,16 +4,17 @@ const sendMail = require('../utils/sendMail');
 const sendToken = require('../utils/sendToken');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
+// const otp = require('.env')
+// const otp_expiry = require('.env')
 
 const register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        const avatar = req.files.avatar;
-        console.log('Avatar:', avatar);
+        //  const avatar = req.files.avatar;
+        //  console.log('Avatar:', avatar);
 
 
-        // Check if user already exists
 
         // Check if user already exists
         let user = await User.findOne({ email }).select('+password');
@@ -22,30 +23,34 @@ const register = async (req, res) => {
         }
 
         // Upload avatar to cloudinary
-        const myCloud = await cloudinary.uploader.upload(avatar.tempFilePath,{
-            folder:"todo-app"
-        }
-    )
+    //     const myCloud = await cloudinary.uploader.upload(avatar.tempFilePath,{
+    //         folder:"todo-app"
+    //     }
+    // )
 
        
-
+ 
         // Generate OTP and expiry
         const otp = Math.floor(100000 + Math.random() * 900000);
-        const otp_expiry = new Date(Date.now() + Number(process.env.OTP_EXPIRY) * 60 * 1000); // Convert minutes to milliseconds
-        console.log("Expires in (seconds):", Number(process.env.OTP_EXPIRY) * 60 * 1000)
+        const otp_expiry = new Date(Date.now() + Number(process.env.OTP_EXPIRE) * 60 * 1000); // Convert minutes to milliseconds
+        console.log("Expires in (seconds):", Number(process.env.OTP_EXPIRE) * 60 * 1000)
+
+      //  fs.rmSync("./temp",{ recursive:true});
 
         // Create new user
         user = await User.create({
             name,
             email,
             password,
-            avatar: {
-                public_id: myCloud.public_id,
-                url: myCloud.secure_url
-            },
+            // avatar: {
+            //     public_id: myCloud.public_id,
+            //     url: myCloud.secure_url
+            // },
             otp,
             otp_expiry
         });
+
+        await sendMail(email,"Verify your account",`Your OTP is ${otp}`);
         // Send token in response
         sendToken(res, user, 201, 'OTP sent successfully');
     } catch (error) {
@@ -57,10 +62,16 @@ const register = async (req, res) => {
 const verify = async (req, res) => {
     try {
         const otp = Number(req.body.otp);
+        console.log("Received OTP:", otp);
 
         const user = await User.findById(req.user._id);
+        console.log("User OTP:", user.otp);
+        console.log("OTP Expiry:", user.otp_expiry);
+        console.log("Current time:", new Date());
 
         if (user.otp !== otp || user.otp_expiry < Date.now()) {
+            console.log("OTP match:", user.otp === otp);
+            console.log("Expiry valid:", user.otp_expiry > Date.now());
             return res.status(400).json({ success: false, error: 'Invalid OTP or OTP has expired' });
         }
 
@@ -72,17 +83,19 @@ const verify = async (req, res) => {
         sendToken(res, user, 200, 'User verified successfully');
 
     } catch (error) {
+        console.error("Verification error:", error);
         res.status(500).json({ error: error.message });
     }
 }
-
-
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
         // Check if user exists
         const user = await User.findOne({ email }).select('+password');
+
+        console.log(user)
+
         if (!user) {
             return res.status(400).json({ success: false, error: 'Invalid email or password' });
         }
@@ -149,7 +162,7 @@ const updateTask = async (req, res) => {
     try {
         const { taskId } = req.params;
         const user = await User.findById(req.user._id);
-        const task = user.tasks.find((task) => task._id.toString() === taskId);
+        const task = user.tasks.find((task) => task._id.toString() === taskId.toString());
 
         if (!task) {
             return res.status(404).json({ success: false, message: 'Task not found' });
@@ -180,17 +193,19 @@ const updateProfile = async (req, res) => {
         const { name } = req.body;
         const avatar = req.files.avatar;
 
+        console.log(avatar)
+
         const user = await User.findById(req.user._id);
         user.name = name;
-
+   
 
         if(avatar){
-            await cloudinary.uploader.destroy(user.avatar.public_id);
+          //  await cloudinary.uploader.destroy(user.avatar.public_id);
             const myCloud = await cloudinary.uploader.upload(avatar.tempFilePath,{
                 folder:"todo-app"
             }
         );
-        fs.rmSync("./tmp",{recursive:true});
+      //  fs.rmSync("./tmp",{recursive:true});
 
 
         user.avatar = {
@@ -239,7 +254,7 @@ const forgotPassword = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000);
 
         user.resetPasswordOtp = otp;
-        user.resetPasswordOtpExpiry = new Date(Date.now() + Number(process.env.OTP_EXPIRY) * 60 * 1000);
+        user.resetPasswordOtpExpiry = new Date(Date.now() + Number(process.env.OTP_EXPIRE) * 60 * 1000);
 
         await user.save();
 

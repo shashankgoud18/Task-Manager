@@ -5,15 +5,17 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+//import { loginSuccess, loadUserFailure, loadUserRequest, loadUserSuccess} from './autuhSlcie'
 import React, { useEffect, useState } from "react";
 import { Button } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../redux/action";
-import { clearError } from "../redux/reducer";
-import {isAuthenticated} from "../redux/reducer"
+import { authSlice, clearError } from "../redux/reducer";
+import isAuthenticated from "../redux/reducer";
+
 
 const Login = ({ navigation }) => {
-  const { error } = useSelector((state) => state.auth);
+  const {isAuthenticated, error } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
 
@@ -21,12 +23,25 @@ const Login = ({ navigation }) => {
   const [password, setPassword] = useState("");
 
   const loginHandler = () => {
+    console.log("Login attempt with:", email, password);
     dispatch(login(email, password));
+
     console.log("login")
+    
   };
 
   useEffect(() => {
+    console.log("UseEffect triggered");
+    console.log("Auth state:", isAuthenticated);
+    //console.log("User:", user); 
+
     console.log(isAuthenticated);
+      
+    if (isAuthenticated) {
+      console.log("Navigating to home...");
+      navigation.replace("home"); // Use replace to avoid back button
+    }
+
     if (error) {
       alert(error);
       dispatch(clearError());
@@ -68,6 +83,20 @@ const Login = ({ navigation }) => {
         <Text style={{ color: "#fff" }}>Login</Text>
       </Button>
 
+      {/* // Add this button for testing */}
+{/* <Button 
+  title="Test Auth State" 
+  style={Styles.btn}
+  onPress={() => {
+    // Manually dispatch the success action
+    dispatch(authSlice.actions.loginSuccess({
+      user: { id: 1, name: 'Test User' },
+      message: 'Manual login success'
+    }));
+    console.log("Manual dispatch complete");
+  }}
+/> */}
+
       <Text
         style={{
           marginTop: 20,
@@ -98,6 +127,7 @@ export default Login;
 
 const Styles = StyleSheet.create({
   input: {
+    color:"#b5b5b5",
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#b5b5b5",

@@ -23,9 +23,26 @@ const Register = ({ navigation, route }) => {
   };
 
   const registerHandler = () => {
+    // const myForm = new FormData();
+    // myForm.append("name", name);
+    // myForm.append("email", email);
+    // myForm.append("password", password);
+    // // myForm.append("avatar", {
+    // //   uri: avatar,
+    // //   type: mime.getType(avatar),
+    // //   name: avatar.split("/").pop(),
+    // // });
 
+    // dispatch(register(myForm)); // dispatching register action
   };
 
+  // useEffect(() => {
+  //   if (route.params) {
+  //     if (route.params.image) {
+  //       setAvatar(route.params.image);
+  //     }
+  //   }
+  // }, [route]);
  
 
   return (
@@ -39,7 +56,7 @@ const Register = ({ navigation, route }) => {
     >
       <Avatar.Image
         size={100}
-        source={{ uri: avatar ? avatar : null }}
+        // source={{ uri: avatar ? avatar : null }}
         style={{ backgroundColor: "#900" }}
       />
       <TouchableOpacity onPress={handleImage}>
@@ -49,6 +66,7 @@ const Register = ({ navigation, route }) => {
       <View style={{ width: "70%" }}>
         <TextInput
           style={Styles.input}
+          placeholderTextColo="#b5b5b5"
           placeholder="Name"
           value={name}
           onChangeText={setName}
@@ -61,7 +79,7 @@ const Register = ({ navigation, route }) => {
         />
         <TextInput
           secureTextEntry
-          style={Styles.input}
+          style={Styles.input }
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
@@ -95,6 +113,8 @@ export default Register;
 const Styles = StyleSheet.create({
   input: {
     backgroundColor: "#fff",
+    color: "#000",
+    placeholderTextColor:"#b5b5b5" ,
     borderWidth: 1,
     borderColor: "#b5b5b5",
     padding: 10,

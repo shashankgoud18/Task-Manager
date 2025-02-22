@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-export const authSlcie = createSlice({
+export const authSlice = createSlice({
   name: "auth",
   initialState: {
     isAuthenticated: false,
@@ -115,7 +115,7 @@ export const {
   verificationFailure,
   clearError,
   clearMessage,
-} = authSlcie.actions;
+} = authSlice.actions;
 
 export const messageSlice = createSlice({
   name: "message",

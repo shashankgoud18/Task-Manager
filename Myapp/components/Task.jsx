@@ -12,6 +12,7 @@ const Task = ({ title, description, status, taskId }) => {
   const handleCheckbox = () => {
     setCompleted(!completed);
     dispatch(updateTask(taskId));
+    //console.log(taskId)
   };
 
   const deleteHandler = async () => {

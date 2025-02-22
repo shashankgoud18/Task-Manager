@@ -12,7 +12,13 @@ app.use(fileUpload({
     useTempFiles:true,
 }
 ));
-app.use(cors());
+app.use(cors({
+    // origin: "http://192.168.1.100:4000",
+    origin:"https://5df7-106-210-99-4.ngrok-free.app",
+    credentials: true, // Allow all origins (for development only)
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }));
 
 app.use('/api/v1',User);
 

@@ -20,12 +20,12 @@ const UserSchema = new mongoose.Schema({
         minLength: [6, 'Password must be at least 6 characters'],
         select: false
     },
-    avatar:{
-        public_id: String,
-        url:{
-            type: String
-        },
-    },
+    // avatar:{
+    //     public_id: String,
+    //     url:{
+    //         type: String
+    //     },
+    // },
     CreatedAt:{
         type: Date,
         default: Date.now
@@ -53,20 +53,24 @@ UserSchema.pre('save', async function(next){
     next()
 })
 
+UserSchema.methods.getJwtToken = function () {
+    const expiresIn = Number(process.env.JWT_COOKIE_EXPIRE) * 24 * 60 * 60;
 
-UserSchema.methods.getJwtToken = function(){
-    return jwt.sign({id:this._id},process.env.JWT_SECRET,{
-        expiresIn:process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60
-    },
-    console.log("Expires in (seconds):", Number(process.env.JWT_COOKIE_EXPIRES) * 24 * 60 * 60)
+    console.log("Expires in (seconds):", expiresIn);
+    console.log("Expires in (days):", process.env.JWT_COOKIE_EXPIRE);
 
-)
-}
+    return jwt.sign(
+        { id: this._id },
+        process.env.JWT_SECRET,
+        { expiresIn }
+    );
+};
 
 UserSchema.methods.comparePassword = async function(password){
     return await bcrypt.compare(password,this.password)
 }
 
 
+//UserSchema.index({otp_expiry:1},{expireAfterSeconds:0})
 
 module.exports = mongoose.model('User', UserSchema);

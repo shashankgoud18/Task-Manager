@@ -22,9 +22,10 @@ const Main = () => {
 
   const { isAuthenticated, loading } = useSelector((state) => state.auth);
   return  (
-    // loading ? <Loader /> :
+   loading ? <Loader /> :
     <NavigationContainer>
       <Stack.Navigator initialRouteName={isAuthenticated ? "home" : "login"}>
+      {/* <Stack.Navigator initialRouteName={ "home"}> */}
         <Stack.Screen
           name="home"
           component={Home}
@@ -40,11 +41,11 @@ const Main = () => {
           component={Register}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
+        {/* <Stack.Screen
           name="camera"
           component={Camera}
           options={{ headerShown: false }}
-        />
+        /> */}
         <Stack.Screen
           name="profile"
           component={Profile}
