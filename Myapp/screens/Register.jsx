@@ -1,4 +1,4 @@
-
+import mime from "mime";
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -8,7 +8,8 @@ import {
   View,
 } from "react-native";
 import { Avatar, Button } from "react-native-paper";
-
+import { useDispatch } from "react-redux";
+import { register } from "../redux/action";
 
 const Register = ({ navigation, route }) => {
   const [avatar, setAvatar] = useState("");
@@ -16,34 +17,35 @@ const Register = ({ navigation, route }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleImage = () => {
-    navigation.navigate("camera", {
-      updateProfile: false,
-    });
-  };
+  const dispatch = useDispatch();
+
+  // const handleImage = () => {
+  //   navigation.navigate("camera", {
+  //     updateProfile: false,
+  //   });
+  // };
 
   const registerHandler = () => {
-    // const myForm = new FormData();
-    // myForm.append("name", name);
-    // myForm.append("email", email);
-    // myForm.append("password", password);
-    // // myForm.append("avatar", {
-    // //   uri: avatar,
-    // //   type: mime.getType(avatar),
-    // //   name: avatar.split("/").pop(),
-    // // });
+    const myForm = new FormData();
+    myForm.append("name", name);
+    myForm.append("email", email);
+    myForm.append("password", password);
+    // myForm.append("avatar", {
+    //   uri: avatar,
+    //   type: mime.getType(avatar),
+    //   name: avatar.split("/").pop(),
+    // });
 
-    // dispatch(register(myForm)); // dispatching register action
+    dispatch(register(myForm));
   };
 
-  // useEffect(() => {
-  //   if (route.params) {
-  //     if (route.params.image) {
-  //       setAvatar(route.params.image);
-  //     }
-  //   }
-  // }, [route]);
- 
+  useEffect(() => {
+    if (route.params) {
+      if (route.params.image) {
+        setAvatar(route.params.image);
+      }
+    }
+  }, [route]);
 
   return (
     <View
@@ -56,7 +58,7 @@ const Register = ({ navigation, route }) => {
     >
       <Avatar.Image
         size={100}
-        // source={{ uri: avatar ? avatar : null }}
+        source={{ uri: avatar ? avatar : null }}
         style={{ backgroundColor: "#900" }}
       />
       <TouchableOpacity onPress={handleImage}>
@@ -66,7 +68,6 @@ const Register = ({ navigation, route }) => {
       <View style={{ width: "70%" }}>
         <TextInput
           style={Styles.input}
-          placeholderTextColo="#b5b5b5"
           placeholder="Name"
           value={name}
           onChangeText={setName}
@@ -79,7 +80,7 @@ const Register = ({ navigation, route }) => {
         />
         <TextInput
           secureTextEntry
-          style={Styles.input }
+          style={Styles.input}
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
@@ -113,8 +114,6 @@ export default Register;
 const Styles = StyleSheet.create({
   input: {
     backgroundColor: "#fff",
-    color: "#000",
-    placeholderTextColor:"#b5b5b5" ,
     borderWidth: 1,
     borderColor: "#b5b5b5",
     padding: 10,

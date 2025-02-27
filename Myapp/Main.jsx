@@ -51,6 +51,18 @@ const Main = () => {
           component={Profile}
           options={{ headerShown: false }}
         />
+
+        <Stack.Screen
+          name="changepassword"
+          component={ChangePassword}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="verify"
+          component={Verify}
+          options={{ headerShown: false }}
+        />
       
       </Stack.Navigator>
 

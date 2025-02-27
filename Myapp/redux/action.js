@@ -40,7 +40,9 @@ import {
 
 // const serverUrl = "http://192.168.1.100:4000/api/v1";
 
-const serverUrl = "https://5df7-106-210-99-4.ngrok-free.app/api/v1";
+//const serverUrl = "https://5df7-106-210-99-4.ngrok-free.app/api/v1";
+
+const serverUrl = "https://fd6a-38-137-14-196.ngrok-free.app/api/v1"
 
 //const serverUrl = "http://10.0.2.2:4000/api/v1";
 
@@ -179,7 +181,7 @@ export const updateProfile = (formData) => async (dispatch) => {
   try {
     dispatch(updateProfileRequest());
 
-    const { data } = await axios.put(`${serverUrl}/updateprofile`, formData, {
+    const { data } = await axios.put(`${serverUrl}/updateProfile`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -225,7 +227,7 @@ export const updatePassword =
       dispatch(updatePasswordRequest());
 
       const { data } = await axios.put(
-        `${serverUrl}/updatepassword`,
+        `${serverUrl}/updatePassword`,
         { oldPassword, newPassword },
         {
           headers: {
@@ -264,7 +266,7 @@ export const forgetPassword = (email) => async (dispatch) => {
     dispatch(forgetPasswordRequest());
 
     const { data } = await axios.post(
-      `${serverUrl}/forgetpassword`,
+      `${serverUrl}/forgetPassword`,
       { email },
       {
         headers: {
@@ -283,7 +285,7 @@ export const resetPassword = (otp, newPassword) => async (dispatch) => {
     dispatch(resetPasswordRequest());
 
     const { data } = await axios.put(
-      `${serverUrl}/resetpassword`,
+      `${serverUrl}/resetPassword`,
       { otp, newPassword },
       {
         headers: {
